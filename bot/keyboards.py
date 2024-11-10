@@ -52,8 +52,8 @@ def add_to_group_keyboard(group_id, leader_telegram_id):
         [
             [
                 InlineKeyboardButton(
-                    text='Присоединиться',
-                    callback_data=f'add_to_group_{group_id}_{leader_telegram_id}',
+                    text="Присоединиться",
+                    callback_data=f"add_to_group_{group_id}_{leader_telegram_id}",
                 )
             ]
         ]
@@ -96,7 +96,7 @@ async def mo_cities_keyboard():
 def split_list_and_create_buttons(input_list):
     def create_button(item):
         return InlineKeyboardButton(
-            text=item.color if hasattr(item, 'color') else item.title,
+            text=item.color if hasattr(item, "color") else item.title,
             callback_data=item.callback_data,
         )
 

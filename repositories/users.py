@@ -21,13 +21,13 @@ async def create_or_update_user(first_name: str, last_name: str, telegram_id: st
                     insert(User),
                     [
                         {
-                            'first_name': first_name,
-                            'last_name': last_name,
-                            'telegram_login': telegram_login,
-                            'telegram_id': telegram_id,
-                            'created_at': datetime.now(),
-                            'updated_at': datetime.now(),
-                            'last_login': datetime.now()
+                            "first_name": first_name,
+                            "last_name": last_name,
+                            "telegram_login": telegram_login,
+                            "telegram_id": telegram_id,
+                            "created_at": datetime.now(),
+                            "updated_at": datetime.now(),
+                            "last_login": datetime.now()
                         }
                     ]
                 )

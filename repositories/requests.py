@@ -12,8 +12,8 @@ async def create_request(user_id: int, group_id: int):
             await session.execute(
                 insert(Request),
                 [{
-                    'user_id': user_id,
-                    'group_id': group_id,
-                    'date': datetime.now(),
+                    "user_id": user_id,
+                    "group_id": group_id,
+                    "date": datetime.now(),
                 }]
             )

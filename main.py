@@ -34,10 +34,10 @@ def handlers_register(bot: Application):
     bot.add_handler(CallbackQueryHandler(transport_type_handler, METRO_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_type_handler, MCK_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_type_handler, MCD_CALLBACK))
-    bot.add_handler(CallbackQueryHandler(metro_station_handler, r'\w+_line_callback'))
-    bot.add_handler(CallbackQueryHandler(mo_city_groups_handler, r'\w+_mo_city'))
-    bot.add_handler(CallbackQueryHandler(groups_handler, r'\w+_station_callback'))
-    bot.add_handler(CallbackQueryHandler(send_request_handler, r'add_to_group_'))
+    bot.add_handler(CallbackQueryHandler(metro_station_handler, r"\w+_line_callback"))
+    bot.add_handler(CallbackQueryHandler(mo_city_groups_handler, r"\w+_mo_city"))
+    bot.add_handler(CallbackQueryHandler(groups_handler, r"\w+_station_callback"))
+    bot.add_handler(CallbackQueryHandler(send_request_handler, r"add_to_group_"))
     bot.add_handler(MessageHandler(filters.CONTACT, send_request_handler))
 
 
@@ -48,5 +48,5 @@ def main():
     bot.run_polling()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
