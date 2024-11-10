@@ -49,7 +49,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @check_user_login
 @callback_answer
-async def location_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def location_adult_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data['message_id']
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,

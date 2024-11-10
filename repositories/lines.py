@@ -19,6 +19,8 @@ async def select_available_metro_lines(transport_type):
                 .join(Group, Group.id == GroupStation.group_id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
+                .where(Group.age != "Молодежные после 25")
+                .where(Group.age != "Молодежные до 25")
                 .where(Transport.callback_data == transport_type)
                 .order_by(Line.color)
                 .distinct()

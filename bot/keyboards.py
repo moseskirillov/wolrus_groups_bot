@@ -2,6 +2,8 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 from bot.titles import MCD_BUTTON_TITLE
+from bot.titles import START_SEARCH_YOUNG_CALLBACK
+from bot.titles import ADULT_BUTTON_TITLE
 from bot.titles import MCD_CALLBACK
 from bot.titles import MCK_BUTTON_TITLE
 from bot.titles import MCK_CALLBACK
@@ -13,16 +15,19 @@ from bot.titles import MO_BUTTON_TITLE
 from bot.titles import MO_LOCATION_CALLBACK
 from bot.titles import ONLINE_BUTTON_TITLE
 from bot.titles import ONLINE_LOCATION_CALLBACK
-from bot.titles import START_BUTTON_TITLE
-from bot.titles import START_SEARCH_CALLBACK
+from bot.titles import YOUNG_BUTTON_TITLE
+from bot.titles import START_SEARCH_ADULT_CALLBACK
 from repositories.districts import select_mo_districts
 from repositories.lines import select_available_metro_lines
 from repositories.stations import select_stations_by_line
 from repositories.stations import select_stations_by_mck
-from repositories.transports import select_transports
+from repositories.transports import select_moscow_transports
 
 start_keyboard = InlineKeyboardMarkup(
-    [[InlineKeyboardButton(START_BUTTON_TITLE, callback_data=START_SEARCH_CALLBACK)]]
+    [
+        [InlineKeyboardButton(ADULT_BUTTON_TITLE, callback_data=START_SEARCH_ADULT_CALLBACK)],
+        [InlineKeyboardButton(YOUNG_BUTTON_TITLE, callback_data=START_SEARCH_YOUNG_CALLBACK)]
+    ]
 )
 
 location_keyboard = InlineKeyboardMarkup(
@@ -56,7 +61,7 @@ def add_to_group_keyboard(group_id, leader_telegram_id):
 
 
 async def transport_types():
-    types = await select_transports()
+    types = await select_moscow_transports()
     keyboard = split_list_and_create_buttons(types)
     return keyboard
 

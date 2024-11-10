@@ -22,6 +22,8 @@ async def select_groups_by_station(station_callback):
                 .join(Station, GroupStation.station_id == Station.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
+                .where(Group.age != "Молодежные после 25")
+                .where(Group.age != "Молодежные до 25")
                 .where(Station.callback_data == station_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),
@@ -82,6 +84,8 @@ async def select_groups_by_district(district_callback):
                 .join(District, Group.district_id == District.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
+                .where(Group.age != "Молодежные после 25")
+                .where(Group.age != "Молодежные до 25")
                 .where(District.callback_data == district_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),

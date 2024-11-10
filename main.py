@@ -6,7 +6,7 @@ from telegram.ext import MessageHandler
 from telegram.ext import filters
 
 from bot.handlers import groups_handler
-from bot.handlers import location_handler
+from bot.handlers import location_adult_handler
 from bot.handlers import metro_station_handler
 from bot.handlers import mo_city_groups_handler
 from bot.handlers import send_request_handler
@@ -20,14 +20,14 @@ from bot.titles import MOSCOW_LOCATION_CALLBACK
 from bot.titles import MO_LOCATION_CALLBACK
 from bot.titles import ONLINE_LOCATION_CALLBACK
 from bot.titles import START_COMMAND
-from bot.titles import START_SEARCH_CALLBACK
+from bot.titles import START_SEARCH_ADULT_CALLBACK
 from config import init
 from config.settings import settings
 
 
 def handlers_register(bot: Application):
     bot.add_handler(CommandHandler(START_COMMAND, start_handler))
-    bot.add_handler(CallbackQueryHandler(location_handler, START_SEARCH_CALLBACK))
+    bot.add_handler(CallbackQueryHandler(location_adult_handler, START_SEARCH_ADULT_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_handler, MOSCOW_LOCATION_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_handler, MO_LOCATION_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_handler, ONLINE_LOCATION_CALLBACK))
