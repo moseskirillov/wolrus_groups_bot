@@ -1,8 +1,8 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-from bot.keyboards import add_to_group_keyboard, location_young_keyboard
+from bot.keyboards import add_to_group_keyboard, location_young_keyboard, online_return_keyboard
 from bot.keyboards import msk_return_keyboard
 from bot.keyboards import mo_return_keyboard
 from bot.keyboards import location_adult_keyboard
@@ -104,7 +104,7 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="Выберите ближайший транспорт",
             reply_markup=keyboard,
         )
-    elif callback == MO_LOCATION_CALLBACK or callback == "transport_type_return":
+    elif callback == MO_LOCATION_CALLBACK:
         keyboard = await mo_cities_keyboard(MO_LOCATION_CALLBACK)
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
@@ -112,8 +112,8 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="Выберите город",
             reply_markup=keyboard,
         )
-    elif callback == ONLINE_LOCATION_CALLBACK or callback == "transport_type_return":
-        groups = await select_online_groups()
+    elif callback == ONLINE_LOCATION_CALLBACK:
+        groups = await select_online_groups(age_type)
         for group in groups:
             keyboard = add_to_group_keyboard(group.id, group.leader.user.telegram_id)
             await context.bot.send_message(
@@ -129,6 +129,12 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.HTML,
                 reply_markup=keyboard,
             )
+            message = await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Чтобы вернуться, нажмите на кнопку",
+                reply_markup=InlineKeyboardMarkup(online_return_keyboard(age_type)),
+            )
+            context.chat_data["message_id"] = message.id
 
 
 @check_user_login

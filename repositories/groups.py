@@ -54,7 +54,7 @@ async def select_group_by_id(group_id):
             return result
 
 
-async def select_online_groups():
+async def select_online_groups(age_group):
     async with connection.session() as session:
         async with session.begin():
             main_query = (
@@ -64,6 +64,8 @@ async def select_online_groups():
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
                 .where(Group.district_id == 22)
+                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
+                .where(1 == 1 if age_group == "young" else Group.district_id == 22)
                 .order_by(Group.leader_id)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),

@@ -60,6 +60,13 @@ mo_return_keyboard = InlineKeyboardMarkup(
 )
 
 
+def online_return_keyboard(age_type):
+    return [
+        [InlineKeyboardButton("Назад", callback_data="start_search_adult" if age_type == "adult" else "start_search_young")],
+        [InlineKeyboardButton("В начало", callback_data="return_to_start")],
+    ]
+
+
 def add_to_group_keyboard(group_id, leader_telegram_id):
     return InlineKeyboardMarkup(
         [
@@ -75,7 +82,7 @@ def add_to_group_keyboard(group_id, leader_telegram_id):
 
 async def transport_types(callback, age_group, age_types):
     types = await select_moscow_transports(age_group, age_types)
-    keyboard = split_list_and_create_buttons(types, callback)
+    keyboard = split_list_and_create_buttons(types, callback, age_group)
     return keyboard
 
 
@@ -106,7 +113,7 @@ async def mo_cities_keyboard(callback):
     return split_list_and_create_buttons(cities, callback)
 
 
-def split_list_and_create_buttons(input_list, callback: None):
+def split_list_and_create_buttons(input_list, callback=None, age_group=None):
     def create_button(item):
         return InlineKeyboardButton(
             text=item.color if hasattr(item, "color") else item.title,
@@ -118,15 +125,18 @@ def split_list_and_create_buttons(input_list, callback: None):
     for sublist in sub_lists:
         buttons = [create_button(item) for item in sublist]
         inline_keyboard.append(buttons)
-    return_button = add_return_button(callback)
+    return_button = add_return_button(callback, age_group)
     if return_button:
         inline_keyboard.append(return_button)
     return InlineKeyboardMarkup(inline_keyboard)
 
 
-def add_return_button(callback):
+def add_return_button(callback, age_group=None):
     if callback in ["moscow", "mo"]:
-        return [InlineKeyboardButton(text=RETURN_BUTTON_TITLE, callback_data="location_return")]
+        if age_group and age_group == "adult":
+            return [InlineKeyboardButton(text=RETURN_BUTTON_TITLE, callback_data="location_return")]
+        else:
+            return [InlineKeyboardButton(text=RETURN_BUTTON_TITLE, callback_data="start_search_young")]
     elif callback in ["metro", "mck", "mcd"]:
         return [InlineKeyboardButton(text=RETURN_BUTTON_TITLE, callback_data="transport_type_return")]
     elif re.match(r'\w+_line_callback', callback):

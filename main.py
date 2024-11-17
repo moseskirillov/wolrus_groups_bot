@@ -33,6 +33,7 @@ def handlers_register(bot: Application):
     bot.add_handler(CallbackQueryHandler(start_handler, "return_to_start"))
     bot.add_handler(CallbackQueryHandler(location_adult_handler, START_SEARCH_ADULT_CALLBACK))
     bot.add_handler(CallbackQueryHandler(location_adult_handler, "location_return"))
+    bot.add_handler(CallbackQueryHandler(location_adult_handler, "start_search_adult"))
     bot.add_handler(CallbackQueryHandler(location_young_handler, "start_search_young"))
     bot.add_handler(CallbackQueryHandler(transport_handler, MOSCOW_LOCATION_CALLBACK))
     bot.add_handler(CallbackQueryHandler(transport_handler, MO_LOCATION_CALLBACK))
