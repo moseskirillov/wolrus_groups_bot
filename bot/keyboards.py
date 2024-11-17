@@ -79,15 +79,15 @@ async def transport_types(callback, age_group, age_types):
     return keyboard
 
 
-async def metro_lines_keyboard(transport_type, age_group):
-    lines = await select_available_metro_lines(transport_type, age_group)
-    keyboard = split_list_and_create_buttons(lines, transport_type)
+async def metro_lines_keyboard(callback, age_group):
+    lines = await select_available_metro_lines(callback, age_group)
+    keyboard = split_list_and_create_buttons(lines, callback)
     return keyboard
 
 
-async def mcd_lines_keyboard(transport_type, age_group):
-    lines = await select_available_metro_lines(transport_type, age_group)
-    keyboard = split_list_and_create_buttons(lines, transport_type)
+async def mcd_lines_keyboard(callback, age_group):
+    lines = await select_available_metro_lines(callback, age_group)
+    keyboard = split_list_and_create_buttons(lines, callback)
     return keyboard
 
 
