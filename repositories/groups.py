@@ -2,6 +2,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm import selectinload
 
+from bot.titles import TYPES
 from config.db import connection
 from entities import Group, District
 from entities import GroupLeader
@@ -9,8 +10,6 @@ from entities import GroupStation
 from entities import RegionalLeader
 from entities import Station
 from entities import User
-
-types = ["Молодежные до 25", "Молодежные после 25"]
 
 
 async def select_groups_by_station(station_callback, age_group):
@@ -25,7 +24,7 @@ async def select_groups_by_station(station_callback, age_group):
                 .join(District, Group.district_id == District.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
-                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
+                .where(Group.age.in_(TYPES) if age_group == "young" else Group.age.notin_(TYPES))
                 .where(Station.callback_data == station_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),
@@ -64,7 +63,7 @@ async def select_online_groups(age_group):
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
                 .where(Group.district_id == 22)
-                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
+                .where(Group.age.in_(TYPES) if age_group == "young" else Group.age.notin_(TYPES))
                 .where(1 == 1 if age_group == "young" else Group.district_id == 22)
                 .order_by(Group.leader_id)
                 .options(
@@ -89,7 +88,7 @@ async def select_groups_by_district(district_callback, age_type):
                 .join(District, Group.district_id == District.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
-                .where(Group.age.in_(types) if age_type == "young" else Group.age.notin_(types))
+                .where(Group.age.in_(TYPES) if age_type == "young" else Group.age.notin_(TYPES))
                 .where(District.callback_data == district_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),

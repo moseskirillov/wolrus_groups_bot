@@ -1,14 +1,13 @@
 from sqlalchemy import select
 
 from bot.titles import MCK_CALLBACK
+from bot.titles import TYPES
 from config.db import connection
 from entities import Group
 from entities import Transport
 from entities import GroupStation
 from entities import Line
 from entities import Station
-
-types = ["Молодежные до 25", "Молодежные после 25"]
 
 
 async def select_stations_by_line(line_callback, age_group):
@@ -23,7 +22,7 @@ async def select_stations_by_line(line_callback, age_group):
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
                 .where(Line.callback_data == line_callback)
-                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
+                .where(Group.age.in_(TYPES) if age_group == "young" else Group.age.notin_(TYPES))
                 .order_by(Station.title)
             )
             result = rows.unique().scalars().all()
@@ -41,7 +40,7 @@ async def select_stations_by_mck(age_group):
                 .where(Transport.callback_data == MCK_CALLBACK)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
-                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
+                .where(Group.age.in_(TYPES) if age_group == "young" else Group.age.notin_(TYPES))
                 .order_by(Station.title)
                 .distinct()
             )

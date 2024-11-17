@@ -80,8 +80,8 @@ def add_to_group_keyboard(group_id, leader_telegram_id):
     )
 
 
-async def transport_types(callback, age_group, age_types):
-    types = await select_moscow_transports(age_group, age_types)
+async def transport_types(callback, age_group):
+    types = await select_moscow_transports(age_group)
     keyboard = split_list_and_create_buttons(types, callback, age_group)
     return keyboard
 

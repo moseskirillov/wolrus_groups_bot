@@ -97,9 +97,8 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data["message_id"]
     callback = update.callback_query.data
     age_type = context.chat_data["age"]
-    types = ["Молодежные до 25", "Молодежные после 25"]
     if callback == MOSCOW_LOCATION_CALLBACK or callback == "transport_type_return":
-        keyboard = await transport_types(MOSCOW_LOCATION_CALLBACK, age_type, types)
+        keyboard = await transport_types(MOSCOW_LOCATION_CALLBACK, age_type)
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=message_id,
@@ -107,7 +106,7 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=keyboard,
         )
     elif callback == MO_LOCATION_CALLBACK:
-        keyboard = await mo_cities_keyboard(MO_LOCATION_CALLBACK)
+        keyboard = await mo_cities_keyboard(MO_LOCATION_CALLBACK, age_type)
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=message_id,

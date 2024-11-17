@@ -20,3 +20,5 @@ RETURN_TO_AGE_CALLBACK = "return_to_age"
 METRO_CALLBACK = "metro"
 MCK_CALLBACK = "mck"
 MCD_CALLBACK = "mcd"
+
+TYPES = ["Молодежные до 25", "Молодежные после 25"]
