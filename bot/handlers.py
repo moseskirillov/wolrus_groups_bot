@@ -21,6 +21,7 @@ from bot.titles import ONLINE_LOCATION_CALLBACK
 from bot.wrappers import callback_answer
 from bot.wrappers import check_user_contact
 from bot.wrappers import check_user_login
+from config.settings import settings
 from repositories.groups import select_group_by_id
 from repositories.groups import select_groups_by_district
 from repositories.groups import select_groups_by_station
@@ -222,6 +223,7 @@ async def send_request_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     callback = context.chat_data["add_to_group_callback"]
     group_id = callback[0]
     leader_telegram_id = callback[1]
+    age_type = context.chat_data["age"]
     contact = context.chat_data["contact"]
     message = await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -230,19 +232,29 @@ async def send_request_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     group = await select_group_by_id(group_id)
     user_telegram_id = context.user_data.get("user_id")
     user = await get_user_by_telegram_id(str(user_telegram_id))
-    regional_leader = await get_regional_leader_by_telegram_id(group.leader.regional_leader_id)
     await create_request(user.id, int(group_id))
-    await context.bot.send_message(
-        chat_id=leader_telegram_id,
-        text="Пришел запрос на добавление в вашу домашнюю группу, данные человека:"
-    )
-    await context.bot.send_contact(chat_id=leader_telegram_id, contact=contact)
-    await context.bot.send_message(
-        chat_id=regional_leader.user.telegram_id,
-        text="Пришел запрос на добавление в домашнюю группу вашего региона, имя лидера: "
-             f"{group.leader.user.first_name} {group.leader.user.last_name}, данные человека:"
-    )
-    await context.bot.send_contact(chat_id=regional_leader.user.telegram_id, contact=contact)
+    if age_type == "adult":
+        regional_leader = await get_regional_leader_by_telegram_id(group.leader.regional_leader_id)
+        await context.bot.send_message(
+            chat_id=leader_telegram_id,
+            text="Пришел запрос на добавление в вашу домашнюю группу, данные человека:"
+        )
+        await context.bot.send_contact(chat_id=leader_telegram_id, contact=contact)
+        await context.bot.send_message(
+            chat_id=regional_leader.user.telegram_id,
+            text="Пришел запрос на добавление в домашнюю группу вашего региона, имя лидера: "
+                 f"{group.leader.user.first_name} {group.leader.user.last_name}, данные человека:"
+        )
+        await context.bot.send_contact(chat_id=regional_leader.user.telegram_id, contact=contact)
+    else:
+        leader_telegram_id = settings.bot.young_admin_id
+        await context.bot.send_message(
+            chat_id=leader_telegram_id,
+            text=f"Пришел запрос на добавление в домашнюю группу, имя лидера "
+                 f"{group.leader.user.first_name} "
+                 f"{group.leader.user.last_name}, данные человека:"
+        )
+        await context.bot.send_contact(chat_id=leader_telegram_id, contact=contact)
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=message.id,
