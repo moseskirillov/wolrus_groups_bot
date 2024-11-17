@@ -1,7 +1,8 @@
 from sqlalchemy import select
 
 from config.db import connection
-from entities import GroupLeader, User
+from entities import GroupLeader
+from entities import User
 
 
 async def get_group_leader_by_telegram_id(telegram_id: str):

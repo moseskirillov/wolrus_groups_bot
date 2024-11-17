@@ -2,7 +2,8 @@ from sqlalchemy import select
 
 from bot.titles import MCK_CALLBACK
 from config.db import connection
-from entities import Group, Transport
+from entities import Group
+from entities import Transport
 from entities import GroupStation
 from entities import Line
 from entities import Station

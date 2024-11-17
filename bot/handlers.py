@@ -2,15 +2,17 @@ from telegram import Update, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-from bot.keyboards import add_to_group_keyboard, location_young_keyboard, online_return_keyboard
-from bot.keyboards import msk_return_keyboard
-from bot.keyboards import mo_return_keyboard
+from bot.keyboards import add_to_group_keyboard
 from bot.keyboards import location_adult_keyboard
+from bot.keyboards import location_young_keyboard
 from bot.keyboards import mcd_lines_keyboard
 from bot.keyboards import mck_stations_keyboard
 from bot.keyboards import metro_lines_keyboard
 from bot.keyboards import metro_stations_keyboard
 from bot.keyboards import mo_cities_keyboard
+from bot.keyboards import mo_return_keyboard
+from bot.keyboards import msk_return_keyboard
+from bot.keyboards import online_return_keyboard
 from bot.keyboards import start_keyboard
 from bot.keyboards import transport_types
 from bot.titles import MOSCOW_LOCATION_CALLBACK

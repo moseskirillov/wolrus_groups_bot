@@ -108,8 +108,8 @@ async def mck_stations_keyboard(callback, age_group):
     return split_list_and_create_buttons(stations, callback)
 
 
-async def mo_cities_keyboard(callback):
-    cities = await select_mo_districts()
+async def mo_cities_keyboard(callback, age_group):
+    cities = await select_mo_districts(age_group)
     return split_list_and_create_buttons(cities, callback)
 
 
