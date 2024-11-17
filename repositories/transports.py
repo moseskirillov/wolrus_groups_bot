@@ -8,7 +8,7 @@ from entities import Station
 from entities import Transport
 
 
-async def select_moscow_transports():
+async def select_moscow_transports(age_group, age_types):
     async with connection.session() as session:
         async with session.begin():
             rows = await session.execute(
@@ -18,6 +18,7 @@ async def select_moscow_transports():
                 .join(Group, Group.id == GroupStation.group_id)
                 .join(District, District.id == Group.district_id)
                 .where(District.is_mo == False)
+                .where(Group.age.in_(age_types) if age_group == "young" else Group.age.notin_(age_types))
             )
             result = rows.unique().scalars().all()
             return result

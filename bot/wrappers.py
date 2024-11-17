@@ -13,9 +13,9 @@ def check_user_login(func):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = context.user_data.get("user_id")
         message_id = context.chat_data.get("message_id")
+        if update.callback_query:
+            await update.callback_query.answer()
         if user_id and message_id:
-            if update.callback_query:
-                await update.callback_query.answer()
             return await func(update, context)
         else:
             await context.bot.send_message(

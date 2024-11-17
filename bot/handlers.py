@@ -2,8 +2,10 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-from bot.keyboards import add_to_group_keyboard
-from bot.keyboards import location_keyboard
+from bot.keyboards import add_to_group_keyboard, location_young_keyboard
+from bot.keyboards import msk_return_keyboard
+from bot.keyboards import mo_return_keyboard
+from bot.keyboards import location_adult_keyboard
 from bot.keyboards import mcd_lines_keyboard
 from bot.keyboards import mck_stations_keyboard
 from bot.keyboards import metro_lines_keyboard
@@ -28,34 +30,62 @@ from repositories.users import get_user_by_telegram_id
 
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=(
-            f"Привет, {update.effective_chat.first_name}!\n"
-            f"Чтобы найти домашнюю группу,\n"
-            f"нажмите на кнопку"
-        ),
-        reply_markup=start_keyboard,
-    )
-    context.chat_data["message_id"] = message.id
-    context.user_data["user_id"] = update.effective_chat.id
-    await create_or_update_user(
-        first_name=update.effective_chat.first_name,
-        last_name=update.effective_chat.last_name or None,
-        telegram_id=str(update.effective_chat.id),
-        telegram_login=update.effective_chat.username,
-    )
+    message_id = context.chat_data.get("message_id")
+    if message_id is not None and update.callback_query:
+        await update.callback_query.answer()
+        await context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=message_id,
+            text=(
+                f"Привет, {update.effective_chat.first_name}!\n"
+                f"Чтобы найти домашнюю группу,\n"
+                f"нажмите на кнопку"
+            ),
+            reply_markup=start_keyboard,
+        )
+    else:
+        message = await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=(
+                f"Привет, {update.effective_chat.first_name}!\n"
+                f"Чтобы найти домашнюю группу,\n"
+                f"нажмите на кнопку"
+            ),
+            reply_markup=start_keyboard,
+        )
+        context.chat_data["message_id"] = message.id
+        context.user_data["user_id"] = update.effective_chat.id
+        await create_or_update_user(
+            first_name=update.effective_chat.first_name,
+            last_name=update.effective_chat.last_name or None,
+            telegram_id=str(update.effective_chat.id),
+            telegram_login=update.effective_chat.username,
+        )
 
 
 @check_user_login
 @callback_answer
 async def location_adult_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data["message_id"]
+    context.chat_data["age"] = "adult"
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=message_id,
         text="Выберите ваше местонахождение",
-        reply_markup=location_keyboard,
+        reply_markup=location_adult_keyboard,
+    )
+
+
+@check_user_login
+@callback_answer
+async def location_young_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message_id = context.chat_data["message_id"]
+    context.chat_data["age"] = "young"
+    await context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=message_id,
+        text="Выберите ваше местонахождение",
+        reply_markup=location_young_keyboard,
     )
 
 
@@ -64,23 +94,25 @@ async def location_adult_handler(update: Update, context: ContextTypes.DEFAULT_T
 async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data["message_id"]
     callback = update.callback_query.data
-    if callback == MOSCOW_LOCATION_CALLBACK:
-        keyboard = await transport_types()
+    age_type = context.chat_data["age"]
+    types = ["Молодежные до 25", "Молодежные после 25"]
+    if callback == MOSCOW_LOCATION_CALLBACK or callback == "transport_type_return":
+        keyboard = await transport_types(MOSCOW_LOCATION_CALLBACK, age_type, types)
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=message_id,
             text="Выберите ближайший транспорт",
             reply_markup=keyboard,
         )
-    elif callback == MO_LOCATION_CALLBACK:
-        keyboard = await mo_cities_keyboard()
+    elif callback == MO_LOCATION_CALLBACK or callback == "transport_type_return":
+        keyboard = await mo_cities_keyboard(MO_LOCATION_CALLBACK)
         await context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
             message_id=message_id,
             text="Выберите город",
             reply_markup=keyboard,
         )
-    elif callback == ONLINE_LOCATION_CALLBACK:
+    elif callback == ONLINE_LOCATION_CALLBACK or callback == "transport_type_return":
         groups = await select_online_groups()
         for group in groups:
             keyboard = add_to_group_keyboard(group.id, group.leader.user.telegram_id)
@@ -104,9 +136,10 @@ async def transport_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def transport_type_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data["message_id"]
     callback = update.callback_query.data
+    age_type = context.chat_data["age"]
     match callback:
         case "metro":
-            keyboard = await metro_lines_keyboard(callback)
+            keyboard = await metro_lines_keyboard(callback, age_type)
             await context.bot.edit_message_text(
                 chat_id=update.effective_chat.id,
                 message_id=message_id,
@@ -114,7 +147,7 @@ async def transport_type_handler(update: Update, context: ContextTypes.DEFAULT_T
                 reply_markup=keyboard,
             )
         case "mck":
-            keyboard = await mck_stations_keyboard()
+            keyboard = await mck_stations_keyboard(callback, age_type)
             await context.bot.edit_message_text(
                 chat_id=update.effective_chat.id,
                 message_id=message_id,
@@ -122,7 +155,7 @@ async def transport_type_handler(update: Update, context: ContextTypes.DEFAULT_T
                 reply_markup=keyboard,
             )
         case "mcd":
-            keyboard = await mcd_lines_keyboard(callback)
+            keyboard = await mcd_lines_keyboard(callback, age_type)
             await context.bot.edit_message_text(
                 chat_id=update.effective_chat.id,
                 message_id=message_id,
@@ -136,7 +169,8 @@ async def transport_type_handler(update: Update, context: ContextTypes.DEFAULT_T
 async def metro_station_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_id = context.chat_data["message_id"]
     callback = update.callback_query.data
-    keyboard = await metro_stations_keyboard(callback)
+    age_type = context.chat_data["age"]
+    keyboard = await metro_stations_keyboard(callback, age_type)
     await context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
         message_id=message_id,
@@ -149,16 +183,30 @@ async def metro_station_handler(update: Update, context: ContextTypes.DEFAULT_TY
 @callback_answer
 async def mo_city_groups_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     callback = update.callback_query.data
-    groups = await select_groups_by_district(callback)
+    age_type = context.chat_data["age"]
+    groups = await select_groups_by_district(callback, age_type)
     await groups_process(context, groups, update)
+    message = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Чтобы вернуться, нажмите на кнопку",
+        reply_markup=mo_return_keyboard,
+    )
+    context.chat_data["message_id"] = message.id
 
 
 @check_user_login
 @callback_answer
 async def groups_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     callback = update.callback_query.data
-    groups = await select_groups_by_station(callback)
+    age_type = context.chat_data["age"]
+    groups = await select_groups_by_station(callback, age_type)
     await groups_process(context, groups, update)
+    message = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Чтобы вернуться, нажмите на кнопку",
+        reply_markup=msk_return_keyboard,
+    )
+    context.chat_data["message_id"] = message.id
 
 
 @check_user_login
@@ -210,6 +258,7 @@ async def groups_process(context, groups, update):
             chat_id=update.effective_chat.id,
             text=(
                 f"{transport_text}\n"
+                f"Район: <b>{group.district.title}</b>\n"
                 f"Дни проведения: <b>{", ".join(g.title for g in group.days)}</b>\n"
                 f"Время: <b>{group.time.strftime("%H:%M")}</b>\n"
                 f"Возраст: <b>{group.age}</b>\n"

@@ -10,8 +10,10 @@ from entities import RegionalLeader
 from entities import Station
 from entities import User
 
+types = ["Молодежные до 25", "Молодежные после 25"]
 
-async def select_groups_by_station(station_callback):
+
+async def select_groups_by_station(station_callback, age_group):
     async with connection.session() as session:
         async with session.begin():
             main_query = (
@@ -20,13 +22,14 @@ async def select_groups_by_station(station_callback):
                 .join(User, GroupLeader.user_id == User.id)
                 .join(GroupStation, GroupStation.group_id == Group.id)
                 .join(Station, GroupStation.station_id == Station.id)
+                .join(District, Group.district_id == District.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
-                .where(Group.age != "Молодежные после 25")
-                .where(Group.age != "Молодежные до 25")
+                .where(Group.age.in_(types) if age_group == "young" else Group.age.notin_(types))
                 .where(Station.callback_data == station_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),
+                    contains_eager(Group.district),
                     selectinload(Group.days),
                     selectinload(Group.stations).joinedload(Station.transport)
                 )
@@ -72,7 +75,7 @@ async def select_online_groups():
             return result
 
 
-async def select_groups_by_district(district_callback):
+async def select_groups_by_district(district_callback, age_type):
     async with connection.session() as session:
         async with session.begin():
             main_query = (
@@ -84,11 +87,11 @@ async def select_groups_by_district(district_callback):
                 .join(District, Group.district_id == District.id)
                 .where(Group.is_open)
                 .where(Group.is_overflow == False)
-                .where(Group.age != "Молодежные после 25")
-                .where(Group.age != "Молодежные до 25")
+                .where(Group.age.in_(types) if age_type == "young" else Group.age.notin_(types))
                 .where(District.callback_data == district_callback)
                 .options(
                     contains_eager(Group.leader).contains_eager(GroupLeader.user),
+                    contains_eager(Group.district),
                     selectinload(Group.days),
                     selectinload(Group.stations).joinedload(Station.transport)
                 )
