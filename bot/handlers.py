@@ -75,19 +75,29 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @check_user_login
 @callback_answer
+@check_user_admin
 async def requests_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    requests = await get_requests()
+    user_id = context.user_data.get("user_id")
+    user = await get_user_by_telegram_id(str(user_id))
+    requests = await get_requests(user.is_youth_admin)
     for request in requests:
+        telegram_text = (
+            f"Телеграм: @{request.group.leader.user.telegram_login}\n"
+            if not user.is_youth_admin
+            else ""
+        )
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=f"Заявка в группу лидера\n"
-            f"{request.group.leader.user.first_name} "
-            f"{request.group.leader.user.last_name}\n"
-            f"Телеграм: @{request.group.leader.user.telegram_login}\n"
-            f"на {request.date.strftime("%d.%m.%Y")}\nот "
-            f"{request.user.last_name} {request.user.first_name}\n"
-            f"Телеграм: @{request.user.telegram_login}\n"
-            f"Телефон: {request.user.phone}",
+            text=(
+                f"Заявка в группу лидера\n"
+                f"{request.group.leader.user.first_name} "
+                f"{request.group.leader.user.last_name}\n"
+                f"{telegram_text}"
+                f"на {request.date.strftime("%d.%m.%Y")}\nот "
+                f"{request.user.last_name} {request.user.first_name}\n"
+                f"Телеграм: @{request.user.telegram_login}\n"
+                f"Телефон: {request.user.phone}"
+            ),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -98,6 +108,12 @@ async def requests_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ]
             ),
         )
+    message = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Чтобы вернуться, нажмите на кнопку",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data="return_to_start")]]),
+    )
+    context.chat_data["message_id"] = message.id
 
 
 @check_user_login
@@ -137,7 +153,11 @@ async def close_request_handler(update: Update, context: ContextTypes.DEFAULT_TY
     request_id = context.chat_data.get("request_id")
     start_kb = start_keyboard(True)
     if request_id is not None:
-        text = "Нет комментария" if update.callback_query else update.effective_message.text
+        text = (
+            "Нет комментария"
+            if update.callback_query
+            else update.effective_message.text
+        )
         await update_request_by_id(request_id, text)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -366,6 +386,7 @@ async def groups_process(context, groups, update):
             f"{transport}: <b>{", ".join(stations)}</b>"
             for transport, stations in transport_stations.items()
         )
+        description = f"{group.description if group.description else ""}\n"
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=(
@@ -377,6 +398,7 @@ async def groups_process(context, groups, update):
                 f"Тип: <b>{group.type}</b>\n"
                 f"Лидер: <b>{group.leader.user.first_name} "
                 f"{group.leader.user.last_name}</b>\n"
+                f"{"Примечание " if description != "" else ""}{description}"
             ),
             parse_mode=ParseMode.HTML,
             reply_markup=keyboard,

@@ -18,6 +18,7 @@ class User(Base):
     telegram_login: Mapped[str] = mapped_column(String(length=255), nullable=True, unique=True)
     telegram_id: Mapped[str] = mapped_column(String(length=255), nullable=False, unique=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_youth_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_login: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)

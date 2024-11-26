@@ -4,7 +4,6 @@ from sqlalchemy import insert, select, update
 from sqlalchemy.orm import contains_eager, selectinload
 
 from bot.titles import TYPES
-from bot.wrappers import check_user_admin
 from config.db import connection
 from entities import Request, Group, GroupLeader, User
 
@@ -47,7 +46,7 @@ async def update_request_by_id(request_id, text):
             )
 
 
-async def get_requests(age_group="adult"):
+async def get_requests(is_young_admin: bool):
     async with connection.session() as session:
         async with session.begin():
             rows = await session.execute(
@@ -58,7 +57,7 @@ async def get_requests(age_group="adult"):
                 .join(User, GroupLeader.user_id == User.id)
                 .where(
                     Group.age.in_(TYPES)
-                    if age_group == "young"
+                    if is_young_admin == True
                     else Group.age.notin_(TYPES)
                 )
                 .options(
