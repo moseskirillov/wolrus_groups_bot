@@ -25,7 +25,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        version_table_schema=target_metadata.schema
+        version_table_schema=target_metadata.schema,
+        include_schemas=False
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -36,7 +37,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         version_table_schema=target_metadata.schema,
-        include_schemas=True
+        include_schemas=False
     )
     with context.begin_transaction():
         context.run_migrations()

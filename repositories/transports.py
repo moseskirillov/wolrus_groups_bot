@@ -19,7 +19,11 @@ async def select_moscow_transports(age_group):
                 .join(Group, Group.id == GroupStation.group_id)
                 .join(District, District.id == Group.district_id)
                 .where(District.is_mo == False)
-                .where(Group.age.in_(TYPES) if age_group == "young" else Group.age.notin_(TYPES))
+                .where(
+                    Group.age.in_(TYPES)
+                    if age_group == "young"
+                    else Group.age.notin_(TYPES)
+                )
             )
             result = rows.unique().scalars().all()
             return result

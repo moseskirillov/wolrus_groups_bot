@@ -21,12 +21,18 @@ from repositories.stations import select_stations_by_line
 from repositories.stations import select_stations_by_mck
 from repositories.transports import select_moscow_transports
 
-start_keyboard = InlineKeyboardMarkup(
-    [
+
+def start_keyboard(is_admin: bool):
+    buttons = [
         [InlineKeyboardButton(ADULT_BUTTON_TITLE, callback_data=START_SEARCH_ADULT_CALLBACK)],
         [InlineKeyboardButton(YOUNG_BUTTON_TITLE, callback_data=START_SEARCH_YOUNG_CALLBACK)]
     ]
-)
+    if is_admin:
+        buttons.append(
+            [InlineKeyboardButton("Заявки", callback_data="requests_callback")]
+        )
+    return InlineKeyboardMarkup(buttons)
+
 
 location_adult_keyboard = InlineKeyboardMarkup(
     [

@@ -19,5 +19,7 @@ class Request(Base):
     user: Mapped["User"] = relationship("User", lazy="joined")
     date: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False)
     is_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    process_date: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
+    comment: Mapped[str] = mapped_column(nullable=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     group: Mapped["Group"] = relationship("Group", lazy="joined")

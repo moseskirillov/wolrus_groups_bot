@@ -7,15 +7,19 @@ from config.db import connection
 from entities import User
 
 
-async def create_or_update_user(first_name: str, last_name: str, telegram_id: str, telegram_login: str):
+async def create_or_update_user(
+    first_name: str, last_name: str, telegram_id: str, telegram_login: str
+) -> bool:
     async with connection.session() as session:
         async with session.begin():
             row = await session.execute(
-                select(User)
-                .where(User.telegram_id == telegram_id))
+                select(User).where(User.telegram_id == telegram_id)
+            )
             user = row.scalar_one_or_none()
             if user:
                 user.last_login = datetime.now()
+                if user.is_admin:
+                    return True
             else:
                 await session.execute(
                     insert(User),
@@ -27,18 +31,19 @@ async def create_or_update_user(first_name: str, last_name: str, telegram_id: st
                             "telegram_id": telegram_id,
                             "created_at": datetime.now(),
                             "updated_at": datetime.now(),
-                            "last_login": datetime.now()
+                            "last_login": datetime.now(),
                         }
-                    ]
+                    ],
                 )
+            return False
 
 
 async def update_user_phone(telegram_id: str, phone_number: str):
     async with connection.session() as session:
         async with session.begin():
             row = await session.execute(
-                select(User)
-                .where(User.telegram_id == telegram_id))
+                select(User).where(User.telegram_id == telegram_id)
+            )
             user = row.scalar_one_or_none()
             if user:
                 user.phone = phone_number
@@ -49,7 +54,6 @@ async def get_user_by_telegram_id(telegram_id: str):
     async with connection.session() as session:
         async with session.begin():
             row = await session.execute(
-                select(User)
-                .where(User.telegram_id == telegram_id)
+                select(User).where(User.telegram_id == telegram_id)
             )
             return row.scalar_one_or_none()

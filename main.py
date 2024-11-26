@@ -5,7 +5,8 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
-from bot.handlers import groups_handler
+from bot.handlers import groups_handler, requests_handler, groups_process, requests_process_handler, \
+    close_request_handler
 from bot.handlers import location_adult_handler
 from bot.handlers import location_young_handler
 from bot.handlers import metro_station_handler
@@ -30,6 +31,7 @@ from config.settings import settings
 def handlers_register(bot: Application):
     bot.add_handler(CommandHandler(START_COMMAND, start_handler))
     bot.add_handler(CallbackQueryHandler(start_handler, RETURN_TO_AGE_CALLBACK))
+    bot.add_handler(CallbackQueryHandler(requests_handler, "requests_callback"))
     bot.add_handler(CallbackQueryHandler(start_handler, "return_to_start"))
     bot.add_handler(CallbackQueryHandler(location_adult_handler, START_SEARCH_ADULT_CALLBACK))
     bot.add_handler(CallbackQueryHandler(location_adult_handler, "location_return"))
@@ -46,6 +48,9 @@ def handlers_register(bot: Application):
     bot.add_handler(CallbackQueryHandler(mo_city_groups_handler, "mo_cities_return"))
     bot.add_handler(CallbackQueryHandler(mo_city_groups_handler, r"\w+_mo_city"))
     bot.add_handler(CallbackQueryHandler(groups_handler, r"\w+_station_callback"))
+    bot.add_handler(CallbackQueryHandler(requests_process_handler, r"\w+_process"))
+    bot.add_handler(CallbackQueryHandler(close_request_handler, r"\w+_not_comment"))
+    bot.add_handler(MessageHandler(filters.TEXT, close_request_handler))
     bot.add_handler(CallbackQueryHandler(send_request_handler, r"add_to_group_"))
     bot.add_handler(MessageHandler(filters.CONTACT, send_request_handler))
 

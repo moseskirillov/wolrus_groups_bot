@@ -5,6 +5,7 @@ from telegram import ReplyKeyboardMarkup
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from bot.keyboards import start_keyboard
 from repositories.users import update_user_phone
 
 
@@ -20,7 +21,7 @@ def check_user_login(func):
         else:
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="Вы не залогинены. Для логина, сначала нажмите /start"
+                text="Вы не залогинены. Для логина, сначала нажмите /start",
             )
 
     return wrapper
@@ -32,6 +33,29 @@ def callback_answer(func):
         if update.callback_query:
             await update.callback_query.answer()
         await func(update, context)
+
+    return wrapper
+
+
+def check_user_admin(func):
+    @wraps(func)
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        is_admin = context.chat_data.get("is_admin")
+        if is_admin:
+            await func(update, context)
+        else:
+            start_kb = start_keyboard(is_admin)
+            message = await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=(
+                    f"Привет, {update.effective_chat.first_name}!\n"
+                    f"Чтобы найти домашнюю группу,\n"
+                    f"нажмите на кнопку"
+                ),
+                reply_markup=start_kb,
+            )
+            context.chat_data["message_id"] = message.id
+            context.user_data["user_id"] = update.effective_chat.id
 
     return wrapper
 
@@ -48,9 +72,11 @@ def check_user_contact(func):
         contact = (
             update.message.contact
             if update.message and update.message.contact
-            else context.chat_data["contact"]
-            if context.chat_data.get("contact")
-            else None
+            else (
+                context.chat_data["contact"]
+                if context.chat_data.get("contact")
+                else None
+            )
         )
         context.chat_data["contact"] = contact
         if update.callback_query:
@@ -60,12 +86,10 @@ def check_user_contact(func):
                 chat_id=update.effective_chat.id,
                 text="Нажмите на кнопку чтобы отправить Ваш контакт и лидер мог связаться с вами",
                 reply_markup=ReplyKeyboardMarkup(
-                    [
-                        [KeyboardButton(text="Отправить контакт", request_contact=True)]
-                    ],
+                    [[KeyboardButton(text="Отправить контакт", request_contact=True)]],
                     one_time_keyboard=True,
-                    resize_keyboard=True
-                )
+                    resize_keyboard=True,
+                ),
             )
         else:
             await update_user_phone(str(update.effective_chat.id), contact.phone_number)
