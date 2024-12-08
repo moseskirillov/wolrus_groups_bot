@@ -387,6 +387,7 @@ async def groups_process(context, groups, update):
             for transport, stations in transport_stations.items()
         )
         description = f"{group.description if group.description else ""}\n"
+        note = f"Примечание: {description}" if description != "" else ""
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=(
@@ -398,7 +399,7 @@ async def groups_process(context, groups, update):
                 f"Тип: <b>{group.type}</b>\n"
                 f"Лидер: <b>{group.leader.user.first_name} "
                 f"{group.leader.user.last_name}</b>\n"
-                f"{"Примечание " if description != "" else ""}{description}"
+                f"{note}"
             ),
             parse_mode=ParseMode.HTML,
             reply_markup=keyboard,
