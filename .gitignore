@@ -1,3 +1,9 @@
 /.env
 .idea
 /docker-compose.yml
+alembic/__pycache__/
+alembic/versions/__pycache__/
+bot/__pycache__/
+config/__pycache__/
+entities/__pycache__/
+repositories/__pycache__/

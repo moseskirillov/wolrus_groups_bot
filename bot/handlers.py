@@ -1,4 +1,6 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update
+from telegram import InlineKeyboardMarkup
+from telegram import InlineKeyboardButton
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
@@ -32,11 +34,13 @@ from repositories.requests import (
     get_requests,
     get_request_by_id,
     update_request_by_id,
+    update_request_feedback_by_id,
 )
 from repositories.users import create_or_update_user
 from repositories.users import get_user_by_telegram_id
 
 
+@callback_answer
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_admin = await create_or_update_user(
         first_name=update.effective_chat.first_name,
@@ -111,7 +115,9 @@ async def requests_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="Чтобы вернуться, нажмите на кнопку",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data="return_to_start")]]),
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("Назад", callback_data="return_to_start")]]
+        ),
     )
     context.chat_data["message_id"] = message.id
 
@@ -323,6 +329,52 @@ async def groups_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.chat_data["message_id"] = message.id
 
 
+@callback_answer
+async def feedback_proccess(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["user_id"] = update.effective_chat.id
+    callback = update.callback_query.data
+    request_id = callback.split("_")[0]
+    chat_id = callback.split("_")[1]
+    response = callback.split("_")[3]
+    if response == "yes":
+        await context.bot.send_message(
+            chat_id=chat_id, text="Спасибо, будем рады видеть Вас на домашней группе"
+        )
+        await update_request_feedback_by_id(request_id, True)
+    else:
+        request = await get_request_by_id(request_id)
+        group_leader = request.group.leader
+        leader_telegram_id = group_leader.user.telegram_id
+        regional_leader_id = group_leader.regional_leader_id
+        regional_leader = await get_regional_leader_by_telegram_id(regional_leader_id)
+        regional_leader_telegram_id = regional_leader.user.telegram_id
+        user = request.user
+        await context.bot.send_message(
+            chat_id=leader_telegram_id,
+            text=f"В вашу домашнюю группу была заявка от человека по имени {user.last_name} {user.first_name}, "
+            f"ссылка на профиль: t.me/{user.telegram_login}. Пожалуйста, свяжитесь с ним",
+        )
+        await context.bot.send_message(
+            chat_id=regional_leader_telegram_id,
+            text=f"В домашнюю группу лидера {group_leader.user.last_name} {group_leader.user.first_name} была заявка от человека по имени "
+            f"{user.last_name} {user.first_name}, "
+            f"ссылка на профиль: t.me/{user.telegram_login}. Пожалуйста, свяжитесь с ним",
+        )
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="С Вами свяжутся в ближайшее время. Мы повторно передали вашу заявку",
+        )
+        await update_request_feedback_by_id(request_id, False)
+    message = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Чтобы вернуться, нажмите на кнопку",
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("Назад", callback_data="return_to_start")]]
+        ),
+    )
+    context.chat_data["message_id"] = message.id
+
+
 @check_user_login
 @check_user_contact
 async def send_request_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -386,21 +438,21 @@ async def groups_process(context, groups, update):
             f"{transport}: <b>{", ".join(stations)}</b>"
             for transport, stations in transport_stations.items()
         )
-        description = f"{group.description if group.description else ""}\n"
+        description = f"{group.description if group.description else ''}"
         note = f"Примечание: {description}" if description != "" else ""
+        text = (
+            f"{transport_text}\n"
+            f"Район: <b>{group.district.title}</b>\n"
+            f"Дни проведения: <b>{', '.join(g.title for g in group.days)}</b>\n"
+            f"Время: <b>{group.time.strftime('%H:%M')}</b>\n"
+            f"Возраст: <b>{group.age}</b>\n"
+            f"Тип: <b>{group.type}</b>\n"
+            f"Лидер: <b>{group.leader.user.first_name} {group.leader.user.last_name}</b>"
+        )
+        text = f"{text}\n{note}" if note != "" else text
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text=(
-                f"{transport_text}\n"
-                f"Район: <b>{group.district.title}</b>\n"
-                f"Дни проведения: <b>{", ".join(g.title for g in group.days)}</b>\n"
-                f"Время: <b>{group.time.strftime("%H:%M")}</b>\n"
-                f"Возраст: <b>{group.age}</b>\n"
-                f"Тип: <b>{group.type}</b>\n"
-                f"Лидер: <b>{group.leader.user.first_name} "
-                f"{group.leader.user.last_name}</b>\n"
-                f"{note}"
-            ),
+            text=text,
             parse_mode=ParseMode.HTML,
             reply_markup=keyboard,
         )
