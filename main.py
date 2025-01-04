@@ -6,7 +6,7 @@ from telegram.ext import MessageHandler
 from telegram.ext import filters
 
 from bot.handlers import (
-    feedback_proccess,
+    feedback_process,
     groups_handler,
     requests_handler,
     requests_process_handler,
@@ -59,7 +59,7 @@ def handlers_register(bot: Application):
     bot.add_handler(CallbackQueryHandler(close_request_handler, r"\w+_not_comment"))
     bot.add_handler(MessageHandler(filters.TEXT, close_request_handler))
     bot.add_handler(CallbackQueryHandler(send_request_handler, r"add_to_group_"))
-    bot.add_handler(CallbackQueryHandler(feedback_proccess, r"\w+_\w+_request_\w+"))
+    bot.add_handler(CallbackQueryHandler(feedback_process, r"\w+_\w+_request_\w+"))
     bot.add_handler(MessageHandler(filters.CONTACT, send_request_handler))
 
 

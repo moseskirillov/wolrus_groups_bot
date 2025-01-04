@@ -9,6 +9,7 @@ from pydantic_settings import SettingsConfigDict
 class BotSettings(BaseSettings):
     token: str
     young_admin_id: int
+    groups_admin_id: int
 
 
 class DatabaseConfig(BaseModel):

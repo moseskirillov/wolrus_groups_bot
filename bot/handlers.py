@@ -330,7 +330,7 @@ async def groups_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @callback_answer
-async def feedback_proccess(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def feedback_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["user_id"] = update.effective_chat.id
     callback = update.callback_query.data
     request_id = callback.split("_")[0]
@@ -338,7 +338,8 @@ async def feedback_proccess(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = callback.split("_")[3]
     if response == "yes":
         await context.bot.send_message(
-            chat_id=chat_id, text="Спасибо, будем рады видеть Вас на домашней группе"
+            chat_id=chat_id,
+            text="Спасибо, будем рады видеть Вас на домашней группе"
         )
         await update_request_feedback_by_id(request_id, True)
     else:
@@ -359,6 +360,12 @@ async def feedback_proccess(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text=f"В домашнюю группу лидера {group_leader.user.last_name} {group_leader.user.first_name} была заявка от человека по имени "
             f"{user.last_name} {user.first_name}, "
             f"ссылка на профиль: t.me/{user.telegram_login}. Пожалуйста, свяжитесь с ним",
+        )
+        await context.bot.send_message(
+            chat_id=settings.bot.groups_admin_id,
+            text=f"В домашнюю группу лидера {group_leader.user.last_name} {group_leader.user.first_name} была заявка от человека по имени "
+                 f"{user.last_name} {user.first_name}, "
+                 f"ссылка на профиль: t.me/{user.telegram_login}. Пожалуйста, свяжитесь с ним",
         )
         await context.bot.send_message(
             chat_id=chat_id,
